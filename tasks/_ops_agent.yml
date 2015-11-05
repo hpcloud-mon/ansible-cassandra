@@ -1,0 +1,52 @@
+---
+
+- name: download the cassandra agent in /tmp if not yet present
+  command: >
+    wget {{ opscenter_agent_url }}
+    chdir=/tmp
+    creates=/tmp/{{ opscenter_agent_fname }}
+
+- name: expand the cassandra agent in the install dir
+  command: >
+    tar -xvzf /tmp/{{ opscenter_agent_fname }}
+    chdir={{ ops_agent_home_dir }}
+    creates={{ ops_agent_home_dir }}/{{ opscenter_agent_basename }}
+
+- name: update the cassandra agent permissions
+  file: >
+    path={{ ops_agent_home_dir }}/{{ opscenter_agent_basename }}
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    state=directory recurse=yes
+
+- name: create a symbolic link to the agent
+  file: >
+    path={{ ops_agent_link }}
+    src={{ ops_agent_home_dir }}/{{ opscenter_agent_basename }}
+    state=link
+    force=yes
+
+- name: configure ip address of ops center
+  lineinfile: >
+    dest="{{ ops_agent_link }}/conf/address.yaml"
+    create=yes
+    regexp='^(stomp_interface.*)$'
+    line="stomp_interface: {{ cassandra_opscenter_host }}"
+
+- name: supervisor init script
+  template: >
+    src=etc_init.d_cassandra-ops-agent.sh.j2
+    dest=/etc/init.d/cassandra-ops-agent.sh
+    owner=root
+    group=root
+    mode=0755
+  register: supervisor_reload
+
+- name: supervisor config script
+  template: >
+    src=etc_supervisor.d_cassandra-ops-agent.conf.j2
+    dest=/etc/supervisor/conf.d/cassandra-ops-agent.conf
+    owner=root
+    group=root
+    mode=0644
+  register: supervisor_reload

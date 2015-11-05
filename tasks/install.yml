@@ -1,0 +1,97 @@
+---
+- name: Create group
+  group: name={{ cassandra_group }} system=yes
+
+- name: Create user
+  user: name={{ cassandra_owner }} system=yes group={{ cassandra_group }}
+
+- name: Create download directory
+  file: path="{{ download_tmp_dir }}" state=directory recurse=yes
+
+- name: Fetch
+  get_url: url=http://archive.apache.org/dist/cassandra/{{ cassandra_version }}/apache-cassandra-{{ cassandra_version }}-bin.tar.gz
+           dest={{ download_tmp_dir }}/apache-cassandra-{{ cassandra_version }}-bin.tar.gz
+  register: get_url_result
+  until: get_url_result.state == 'file'
+  retries: 5
+  delay: 1
+
+- name: Expand to the install directory
+  unarchive: >
+    src={{ download_tmp_dir }}/apache-cassandra-{{ cassandra_version }}-bin.tar.gz
+    dest={{ cassandra_install_dir }}
+    copy=no
+
+- name: Update the owner and group
+  file: >
+    path={{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }}
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    state=directory recurse=yes
+
+- name: Create a symbolic link
+  file: path={{ cassandra_link }} src={{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }} state=link force=yes
+
+- name: Create the data directory
+  file: >
+    path={{ cassandra_data_root_dir }}
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    mode=0750
+    state=directory
+
+- name: Create the working subdirectories
+  file: >
+    path={{ cassandra_data_root_dir }}/{{ item }}
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    mode=0750
+    state=directory
+  with_items:
+    - data
+    - commitlog
+    - saved_caches
+
+- name: Create local log directory
+  file: >
+    path={{ cassandra_link }}/logs
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    recurse=yes
+    mode=0755
+    state=directory
+
+- name: Link log directory to local log directory
+  file: >
+    src={{ cassandra_link }}/logs
+    dest={{ cassandra_log_dir }}
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    state=link
+
+- name: Create accessible links to commands
+  file: >
+    src={{ cassandra_link }}/bin/{{ item }}
+    dest=/usr/bin/{{ item }}
+    owner=root
+    group=root
+    state=link
+  with_items:
+    - cassandra
+    - cqlsh
+    - cqlsh.py
+    - nodetool
+    - debug-cql
+
+- include: _supervise.yml
+- include: _ops_agent.yml
+
+# these are normally in the handlers, but we want execution to happen at this point, not at a later time
+
+- name: reload supervisor on change
+  shell: supervisorctl reread && supervisorctl update
+  when: (supervisor_reload|changed)
+
+- name: restart supervisor on change
+  shell: service supervisor stop && service supervisor start
+  when: (supervisor_restart|changed)

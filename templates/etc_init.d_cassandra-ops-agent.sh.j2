@@ -1,0 +1,11 @@
+#!/bin/bash -l
+
+# msbielinski:
+# http://stackoverflow.com/questions/9090683/supervisord-stopping-child-processes
+# currently, apt has old version supervisor_3.0a8. Need supervisor_3.0b2-1 for option stopasgroup=true
+# sudo supervisorctl restart fails (abnormal termination on start after stop)
+# confirmed that this trap directive fixes the problem for supervisor_3.0a8 where stopasgroup is not available.
+
+trap "kill -- -$$" EXIT
+
+HOME=/home/{{ cassandra_owner }} {{ ops_agent_link }}/bin/datastax-agent -f
