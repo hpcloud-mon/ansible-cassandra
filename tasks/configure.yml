@@ -1,0 +1,16 @@
+---
+- name: Update the cassandra configuration
+  template: >
+    src=conf_{{ item }}.{{cassandra_version}}.j2
+    dest={{ cassandra_link }}/conf/{{ item }}
+    owner={{ cassandra_owner }}
+    group={{ cassandra_group }}
+    mode=0644
+  with_items:
+    - cassandra.yaml
+    - cassandra-env.sh
+  register: restart_cassandra
+
+- name: restart cassandra
+  supervisorctl: name=cassandra state=restarted
+  when: (restart_cassandra|changed)

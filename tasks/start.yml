@@ -1,0 +1,7 @@
+---
+- name: Enable and start cassandra
+  supervisorctl: name=cassandra state=started
+
+- name: wait for cassandra port
+  wait_for: port={{ cassandra_native_transport_port }} host={{ cassandra_bind_address | default('127.0.0.1') }} state=started timeout=180
+  register: first_wait

@@ -1,0 +1,15 @@
+---
+
+# we moved these handlers to tasks at the end of the install tasks for better timing and control
+# of their execution
+
+#- name: reload supervisor on change
+#  shell: supervisorctl reread && supervisorctl update
+#  when: (supervisor_reload|changed)  # supervisor is register variable
+#
+#- name: restart supervisor on change
+#  shell: service supervisor stop && service supervisor start
+#  when: (supervisor_restart|changed)  # supervisor is register variable
+
+#- name: restart cassandra
+#  supervisorctl: name=cassandra state=restarted

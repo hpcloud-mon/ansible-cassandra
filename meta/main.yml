@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Michael Bielinski
+  description: Install Cassandra Database - Originally based on the version by Pjan Vandaele
+  license: MIT
+  min_ansible_version: 1.3
+  platforms:
+  - name: Ubuntu
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+  categories:
+  - database
+  - database:nosql
+dependencies: []
