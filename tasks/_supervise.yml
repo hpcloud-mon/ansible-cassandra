@@ -1,0 +1,34 @@
+---
+- name: install supervisord
+  apt: pkg=supervisor state=installed
+
+- name: ensure supervisord is running and enabled
+  service: name=supervisor state=started enabled=yes
+
+- name: add supervisord config file
+  template: >
+    src=supervisord.conf.j2
+    dest=/etc/supervisor/supervisord.conf
+    owner=root
+    group=root
+    mode=0644
+  register: supervisor_restart
+
+- name: supervisor init script
+  template: >
+    src=etc_init.d_cassandra.sh.j2
+    dest=/etc/init.d/cassandra.sh
+    owner=root
+    group=root
+    mode=0755
+  register: supervisor_reload
+
+- name: install the supervisord cassandra script
+  template: >
+    src=etc_supervisor.d_cassandra.conf.j2
+    dest=/etc/supervisor/conf.d/cassandra.conf
+    owner=root
+    group=root
+    mode=0644
+  register: supervisor_reload
+

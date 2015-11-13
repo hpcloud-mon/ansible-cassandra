@@ -1,0 +1,14 @@
+[program:cassandra-ops-agent]
+command=/etc/init.d/cassandra-ops-agent.sh
+directory={{ ops_agent_link }}
+user={{cassandra_owner}}
+autostart=true
+autorestart=true
+stopasgroup=true
+startsecs=10
+startretries=999
+log_stdout=true
+log_stderr=true
+logfile={{ ops_agent_log_file }}
+logfile_maxbytes=10MB
+logfile_backups=10

@@ -1,0 +1,3 @@
+---
+- name: Stop cassandra
+  supervisorctl: name=cassandra state=stopped
