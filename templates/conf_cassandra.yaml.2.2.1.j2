@@ -317,7 +317,8 @@ commitlog_segment_size_in_mb: {{ cassandra_commitlog_segment_size_in_mb }}
 seed_provider:
     - class_name: org.apache.cassandra.locator.SimpleSeedProvider
       parameters:
-          - seeds: {{ cassandra_bind_address | default('127.0.0.1') }}
+          # - seeds: {{ cassandra_bind_address | default('127.0.0.1') }}
+          - seeds: {% for host in cassandra_seeds %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
 
 # For workloads with more data than can fit in memory, Cassandra's
 # bottleneck will be reads that need to fetch data from

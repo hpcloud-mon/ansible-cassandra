@@ -16,8 +16,7 @@ cassandra_log_file: "{{ cassandra_log_dir }}/cassandra.log"
 cassandra_owner: cassandra    # do not confuse with cassandra_user (db username)
 cassandra_group: cassandra
 cassandra_num_tokens: 256
-cassandra_cluster_name: mini-mon
-cassandra_bind_address: "{{mini_mon}}"
+cassandra_cluster_name: monasca
 cassandra_initial_token: " " # in case of cluster must be calculated
 cassandra_endpoint_snitch: "SimpleSnitch"     # in case of cluster: RackInferringSnitch
 cassandra_hinted_handoff_enabled: true
